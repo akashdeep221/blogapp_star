@@ -36,6 +36,7 @@ public class AppSecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/articles", "/articles/{article-slug}",
                                 "/articles/{article-slug}/comments").permitAll()
                         .requestMatchers(HttpMethod.POST, "/articles").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/articles").permitAll()
                         .requestMatchers(HttpMethod.POST, "/articles/comments").permitAll()
                         .anyRequest().authenticated()
                 )

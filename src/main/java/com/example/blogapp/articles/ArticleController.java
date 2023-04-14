@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/articles")
@@ -39,11 +40,11 @@ public class ArticleController {
             @RequestParam(value = "page", required = false) String page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int size
     ){
-        return ResponseEntity.ok(articleService.getArticles(tag, author, page, size));
+        return ResponseEntity.ok(articleService.getArticles(tag,author,page,size));
     }
 
     @GetMapping("/{article-slug}")
-    public ResponseEntity<GetArticlesDto> getArticle(@PathVariable("article-slug") String slug) {
+    public ResponseEntity<CreateArticleResponseDto> getArticle(@PathVariable("article-slug") String slug) {
         return ResponseEntity.ok(articleService.getArticleBySlug(slug));            // can add author name
     }
 
@@ -52,22 +53,21 @@ public class ArticleController {
         return ResponseEntity.ok(articleService.getArticleCommentsBySlug(slug));
     }
 
-    @PatchMapping("/{article-slug}")
-    public ResponseEntity<PatchArticleResponseDto> patchArticle(@PathVariable("article-slug") String slug,
-                                                        @RequestBody PatchArticleDto request){
-        var patchedArticle = articleService.patchArticle(slug,request);
-        return ResponseEntity.created(URI.create("/articles/{article-slug}" +
-                patchedArticle.getTitle())).body(patchedArticle);
+    @PatchMapping("")
+    public ResponseEntity<PatchArticleResponseDto> patchArticle(@RequestBody PatchArticleDto request){
+        var patchedArticle = articleService.patchArticle(request);
+        return ResponseEntity.created(URI.create("/articles" +
+                patchedArticle.getTitle())).body(patchedArticle);       // todo token fix
     }
 
-    @DeleteMapping("/article/{article-slug}/comments/{comment-id}")
-    public ResponseEntity<GetArticleCommentsDto> deleteArticleComment(
-            @PathVariable("article-slug") String articleSlug,
-            @PathVariable("comment-id") Long id
-    ){
-        articleService.deleteArticleComment(articleSlug, id);
-        return ResponseEntity.ok(articleService.getArticleCommentsBySlug(articleSlug));
-    }
+//    @DeleteMapping("/article/comments")
+//    public ResponseEntity<GetArticleCommentsDto> deleteArticleComment(
+//            @RequestParam(value = "articleSlug", required = true) String tag,
+//            @RequestParam(value = "", required = true) String author
+//    ){
+//        articleService.deleteArticleComment(articleSlug, id);
+//        return ResponseEntity.ok(articleService.getArticleCommentsBySlug(articleSlug));
+//    }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<String> handleResponseStatusException(ResponseStatusException e){

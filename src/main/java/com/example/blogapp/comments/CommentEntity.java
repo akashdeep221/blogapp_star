@@ -2,6 +2,8 @@ package com.example.blogapp.comments;
 
 import com.example.blogapp.articles.ArticleEntity;
 import com.example.blogapp.users.UserEntity;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +17,9 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity(name = "Comments")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class CommentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

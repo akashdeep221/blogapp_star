@@ -2,6 +2,8 @@ package com.example.blogapp.articles;
 
 import com.example.blogapp.comments.CommentEntity;
 import com.example.blogapp.users.UserEntity;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,6 +18,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity(name = "Articles")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class ArticleEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

@@ -80,14 +80,14 @@ public class ArticleService {
         return modelMapper.map(savedComment, CreateArticleCommentResponseDto.class);
     }
 
-    public GetArticlesDto getArticleBySlug(String slug){
+    public CreateArticleResponseDto getArticleBySlug(String slug){
         ArticleEntity article = articleRepository.findArticleBySlug(slug);
 
         if (article==null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article not found");
         }
 
-        return modelMapper.map(article, GetArticlesDto.class);
+        return modelMapper.map(article, CreateArticleResponseDto.class);
     }
 
     public GetArticleCommentsDto getArticleCommentsBySlug(String slug){
@@ -96,79 +96,79 @@ public class ArticleService {
         if (article==null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article not found");
         }
-
+        GetArticleCommentsDto dto = new GetArticleCommentsDto();
         List<CommentEntity> commentsOfArticle = article.getCommentsOfArticle();
-        return modelMapper.map(commentsOfArticle, GetArticleCommentsDto.class);
+        dto.setCommentsOfArticle(commentsOfArticle);
+        return dto;
     }
 
-    public List<CreateArticleResponseDto> mapList(List<ArticleEntity> source,
-                                                  Class<CreateArticleResponseDto> targetClass){
-        return source
-                .stream()
-                .map(element -> modelMapper.map(element, targetClass))
-                .collect(Collectors.toList());
-    }
     public GetArticlesDto getArticles(String tag, String authorName, String page, int size){
-
+        GetArticlesDto dto = new GetArticlesDto();
         try {
             if (tag != null && authorName == null && page == null) {
                 List<ArticleEntity> listOfArticles = articleRepository.findByTag(tag);
-
-                return modelMapper.map(listOfArticles, GetArticlesDto.class);
+                dto.setArticleEntities(listOfArticles);
+                return dto;
             }
             else if (tag == null && authorName != null && page == null) {
                 UserEntity author = userRepository.findByUsername(authorName);
                 List<ArticleEntity> listOfArticles = author.getArticlesByUser();
-                return modelMapper.map(listOfArticles, GetArticlesDto.class);
+                dto.setArticleEntities(listOfArticles);
+                return dto;
             }
             else if (tag == null && authorName == null && page != null) {
                 List<ArticleEntity> listOfArticles = articleRepository.findAll();
                 if (listOfArticles.size() > size) {
                     List<ArticleEntity> newList = listOfArticles.subList(Integer.parseInt(page) * size,
                             Integer.parseInt(page) * size + size);
-                    return modelMapper.map(newList, GetArticlesDto.class);
+                    dto.setArticleEntities(newList);
+                    return dto;
                 }
                 else {
-                    return modelMapper.map(listOfArticles, GetArticlesDto.class);
+                    dto.setArticleEntities(listOfArticles);
+                    return dto;
                 }
             }
             else {
                 List<ArticleEntity> listOfArticles = articleRepository.findAll();
-                for (ArticleEntity article : listOfArticles){
-                    System.out.println(article.getTitle());
-                }
-                return modelMapper.map(listOfArticles, GetArticlesDto.class);
+                dto.setArticleEntities(listOfArticles);
+                return dto;
             }
         } catch (Exception e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Please look into the request");
         }
     }
 
-    public void deleteArticleComment(String articleSlug, Long id){
-        ArticleEntity article = articleRepository.findArticleBySlug(articleSlug);
+//    public void deleteArticleComment(String articleSlug, Long id){
+//        ArticleEntity article = articleRepository.findArticleBySlug(articleSlug);
+//
+//        if (article==null){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article not found");
+//        }
+//
+//        List<CommentEntity> commentsOfArticle = article.getCommentsOfArticle();
+//        for (CommentEntity comment : commentsOfArticle){
+//            if (comment.getId().equals(id)){
+//                commentRepository.delete(comment);
+//                break;
+//            }
+//        }
+//    }
 
-        if (article==null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article not found");
-        }
-
-        List<CommentEntity> commentsOfArticle = article.getCommentsOfArticle();
-        for (CommentEntity comment : commentsOfArticle){
-            if (comment.getId().equals(id)){
-                commentRepository.delete(comment);
-                break;
-            }
-        }
-    }
-
-    public PatchArticleResponseDto patchArticle(String slug, PatchArticleDto request){
+    public PatchArticleResponseDto patchArticle(PatchArticleDto request){
         String email;
         try {
             email = jwtService.getEmailFromJwt(request.getToken());
         }
         catch (JWTVerificationException e){
-            throw new RuntimeException("Invalid token!");
+            throw new ResponseStatusException(HttpStatus.valueOf(403), "Invalid token!");
         }
-        ArticleEntity foundArticle = articleRepository.findArticleBySlug(slug);
+
+        if (userRepository.findByEmail(email)==null){
+            throw new ResponseStatusException(HttpStatus.valueOf(403), "Invalid token!");
+        }
+
+        ArticleEntity foundArticle = articleRepository.findArticleBySlug(request.getSlug());
         modelMapper.map(request, foundArticle);
         return modelMapper.map(foundArticle, PatchArticleResponseDto.class);
     }
