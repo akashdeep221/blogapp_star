@@ -1,0 +1,21 @@
+server:
+  port: 8383
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb
+
+    # jdbc:postgresql://localhost:5432/postgres
+
+    #username: postgres
+    #password: password
+  jpa:
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+        # PostgreSQLDialect
+    hibernate:
+      ddl-auto: create-drop
